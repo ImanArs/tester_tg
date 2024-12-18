@@ -10,6 +10,11 @@ const App = () => {
     });
   }, []);
 
+  useEffect(() => {
+    WebApp.ready(); // Сообщаем Telegram, что приложение готово
+    console.log('Данные о запуске:', WebApp.initDataUnsafe);
+  }, []);
+
   return (
     <div style={{ backgroundColor: theme.bg_color, color: theme.text_color }}>
       <h1>Telegram Mini App</h1>
