@@ -32,9 +32,9 @@ function App() {
 
     const accelerometerInterval = setInterval(() => {
       setAccelerometerData({
-        x: WebApp.Accelerometer.x,
-        y: WebApp.Accelerometer.y,
-        z: WebApp.Accelerometer.z,
+        x: WebApp.Accelerometer.x || 0,
+        y: WebApp.Accelerometer.y || 0,
+        z: WebApp.Accelerometer.z || 0,
       });
     }, 500);
 
@@ -48,9 +48,9 @@ function App() {
 
     const gyroscopeInterval = setInterval(() => {
       setGyroscopeData({
-        x: WebApp.Gyroscope.x,
-        y: WebApp.Gyroscope.y,
-        z: WebApp.Gyroscope.z,
+        x: WebApp.Gyroscope.x || 0,
+        y: WebApp.Gyroscope.y || 0,
+        z: WebApp.Gyroscope.z || 0,
       });
     }, 500);
 
@@ -90,15 +90,15 @@ function App() {
       </div>
       <div>
         <h2>Акселерометр</h2>
-        <p>X: {accelerometerData.x.toFixed(2)} м/с²</p>
-        <p>Y: {accelerometerData.y.toFixed(2)} м/с²</p>
-        <p>Z: {accelerometerData.z.toFixed(2)} м/с²</p>
+        <p>X: {+accelerometerData.x.toFixed(2)} м/с²</p>
+        <p>Y: {+accelerometerData.y.toFixed(2)} м/с²</p>
+        <p>Z: {+accelerometerData.z.toFixed(2)} м/с²</p>
       </div>
       <div>
         <h2>Гироскоп</h2>
-        <p>X: {gyroscopeData.x.toFixed(2)} рад/с</p>
-        <p>Y: {gyroscopeData.y.toFixed(2)} рад/с</p>
-        <p>Z: {gyroscopeData.z.toFixed(2)} рад/с</p>
+        <p>X: {+gyroscopeData.x.toFixed(2)} рад/с</p>
+        <p>Y: {+gyroscopeData.y.toFixed(2)} рад/с</p>
+        <p>Z: {+gyroscopeData.z.toFixed(2)} рад/с</p>
       </div>
     </div>
   );
