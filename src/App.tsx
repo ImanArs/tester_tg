@@ -1,9 +1,9 @@
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import "./App.css";
 import WebApp from "@twa-dev/sdk";
 
 function App() {
-  const [theme] = useState(WebApp.themeParams);
+  const [theme, setTheme] = useState(WebApp.themeParams);
   const [accelerometerData, setAccelerometerData] = useState({
     x: 0,
     y: 0,
@@ -11,72 +11,68 @@ function App() {
   });
   const [gyroscopeData, setGyroscopeData] = useState({ x: 0, y: 0, z: 0 });
 
-  useLayoutEffect(() => {
-    async function initializeWebApp() {
-      WebApp.ready();
-
-      // Проверяем WebApp.ready и запускаем сенсоры
-      await initializeSensorsWithRetry(WebApp.Accelerometer, "Акселерометр");
-      await initializeSensorsWithRetry(WebApp.Gyroscope, "Гироскоп");
-
-      // Устанавливаем интервалы для обновления данных
-      const accelerometerInterval = setInterval(() => {
-        setAccelerometerData({
-          x: WebApp.Accelerometer.x || 0,
-          y: WebApp.Accelerometer.y || 0,
-          z: WebApp.Accelerometer.z || 0,
-        });
-      }, 500);
-
-      const gyroscopeInterval = setInterval(() => {
-        setGyroscopeData({
-          x: WebApp.Gyroscope.x || 0,
-          y: WebApp.Gyroscope.y || 0,
-          z: WebApp.Gyroscope.z || 0,
-        });
-      }, 500);
-
-      // Очистка ресурсов при размонтировании
-      return () => {
-        clearInterval(accelerometerInterval);
-        clearInterval(gyroscopeInterval);
-        WebApp.Accelerometer.stop();
-        WebApp.Gyroscope.stop();
-      };
-    }
-
-    initializeWebApp();
+  useEffect(() => {
+    WebApp.onEvent("themeChanged", () => {
+      setTheme(WebApp.themeParams);
+    });
   }, []);
 
-  // Функция с логикой повторного запуска сенсоров
-  async function initializeSensorsWithRetry(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sensor: any,
-    sensorName: string,
-    maxAttempts = 5,
-    delay = 1000
-  ) {
-    let attempts = 0;
+  useLayoutEffect(() => {
+    WebApp.ready();
+    console.log("Данные о запуске:", WebApp.initDataUnsafe);
 
-    while (attempts < maxAttempts) {
-      const started = await new Promise((resolve) => {
-        sensor.start({ refresh_rate: 500 }, resolve);
+    // Инициализация акселерометра
+    setTimeout(() => {
+      WebApp.Accelerometer.start({ refresh_rate: 500 }, () => {
+        if (WebApp.Accelerometer.isStarted) {
+          WebApp.showAlert("Акселерометр запущен");
+        } else {
+          WebApp.showAlert("Не удалось запустить акселерометр");
+        }
       });
+    }, 0);
 
-      if (started) {
-        WebApp.showAlert(`${sensorName} запущен`);
-        return true;
-      }
+    const accelerometerInterval = setInterval(() => {
+      setAccelerometerData({
+        x: WebApp.Accelerometer.x || 0,
+        y: WebApp.Accelerometer.y || 0,
+        z: WebApp.Accelerometer.z || 0,
+      });
+    }, 500);
 
-      attempts++;
-      await new Promise((res) => setTimeout(res, delay));
-    }
+    setTimeout(() => {
+      WebApp.Gyroscope.start({ refresh_rate: 500 }, (started) => {
+        if (started) {
+          WebApp.showAlert("Гироскоп запущен");
+        } else {
+          WebApp.showAlert("Не удалось запустить гироскоп");
+        }
+      });
+    }, 0);
 
-    WebApp.showAlert(
-      `Не удалось запустить ${sensorName} после ${maxAttempts} попыток`
-    );
-    return false;
-  }
+    const gyroscopeInterval = setInterval(() => {
+      setGyroscopeData({
+        x: WebApp.Gyroscope.x || 0,
+        y: WebApp.Gyroscope.y || 0,
+        z: WebApp.Gyroscope.z || 0,
+      });
+    }, 500);
+
+    return () => {
+      clearInterval(accelerometerInterval);
+      clearInterval(gyroscopeInterval);
+      WebApp.Accelerometer.stop((stopped) => {
+        if (stopped) {
+          WebApp.showAlert("Акселерометр остановлен");
+        }
+      });
+      WebApp.Gyroscope.stop((stopped) => {
+        if (stopped) {
+          WebApp.showAlert("Гироскоп остановлен");
+        }
+      });
+    };
+  }, []);
 
   const copyInitData = () => {
     navigator.clipboard
@@ -104,9 +100,9 @@ function App() {
       </div>
       <div>
         <h2>Гироскоп</h2>
-        <p>X: {+gyroscopeData.x.toFixed(2)} рад/с</p>
-        <p>Y: {+gyroscopeData.y.toFixed(2)} рад/с</p>
-        <p>Z: {+gyroscopeData.z.toFixed(2)} рад/с</p>
+        <p>X: {gyroscopeData.x.toFixed(2)} рад/с</p>
+        <p>Y: {gyroscopeData.y.toFixed(2)} рад/с</p>
+        <p>Z: {gyroscopeData.z.toFixed(2)} рад/с</p>
       </div>
     </div>
   );
