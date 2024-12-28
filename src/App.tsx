@@ -21,6 +21,24 @@ function App() {
     WebApp.ready();
     console.log("Данные о запуске:", WebApp.initDataUnsafe);
 
+    setTimeout(() => {
+      WebApp.Gyroscope.start({ refresh_rate: 500 }, (started) => {
+        if (started) {
+          WebApp.showAlert("Гироскоп запущен");
+        } else {
+          WebApp.showAlert("Не удалось запустить гироскоп");
+        }
+      });
+    }, 0);
+
+    const gyroscopeInterval = setInterval(() => {
+      setGyroscopeData({
+        x: WebApp.Gyroscope.x || 0,
+        y: WebApp.Gyroscope.y || 0,
+        z: WebApp.Gyroscope.z || 0,
+      });
+    }, 500);
+
     // Инициализация акселерометра
     setTimeout(() => {
       WebApp.Accelerometer.start({ refresh_rate: 500 }, () => {
@@ -37,24 +55,6 @@ function App() {
         x: WebApp.Accelerometer.x || 0,
         y: WebApp.Accelerometer.y || 0,
         z: WebApp.Accelerometer.z || 0,
-      });
-    }, 500);
-
-    setTimeout(() => {
-      WebApp.Gyroscope.start({ refresh_rate: 500 }, (started) => {
-        if (started) {
-          WebApp.showAlert("Гироскоп запущен");
-        } else {
-          WebApp.showAlert("Не удалось запустить гироскоп");
-        }
-      });
-    }, 0);
-
-    const gyroscopeInterval = setInterval(() => {
-      setGyroscopeData({
-        x: WebApp.Gyroscope.x || 0,
-        y: WebApp.Gyroscope.y || 0,
-        z: WebApp.Gyroscope.z || 0,
       });
     }, 500);
 
