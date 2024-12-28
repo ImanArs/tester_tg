@@ -3,6 +3,39 @@ import "./App.css";
 import WebApp from "@twa-dev/sdk";
 
 function App() {
+  const [gyroData, setGyroData] = useState({
+    alpha: 0,
+    beta: 0,
+    gamma: 0,
+  });
+
+  const [gyroSupported, setGyroSupported] = useState(true);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleOrientation = (event: any) => {
+      if (event.alpha !== null && event.beta !== null && event.gamma !== null) {
+        setGyroData({
+          alpha: event.alpha,
+          beta: event.beta,
+          gamma: event.gamma,
+        });
+      }
+    };
+
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener("deviceorientation", handleOrientation);
+      console.log("DeviceOrientationEvent is supported");
+    } else {
+      setGyroSupported(false);
+      console.log("DeviceOrientationEvent is not supported");
+    }
+
+    return () => {
+      window.removeEventListener("deviceorientation", handleOrientation);
+    };
+  }, []);
+
   const [theme, setTheme] = useState(WebApp.themeParams);
   const [accelerometerData, setAccelerometerData] = useState({
     x: 0,
@@ -10,8 +43,7 @@ function App() {
     z: 0,
   });
   const [gyroscopeData, setGyroscopeData] = useState({ x: 0, y: 0, z: 0 });
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     WebApp.onEvent("themeChanged", () => {
       setTheme(WebApp.themeParams);
     });
@@ -103,6 +135,18 @@ function App() {
         <p>X: {gyroscopeData.x.toFixed(2)} рад/с</p>
         <p>Y: {gyroscopeData.y.toFixed(2)} рад/с</p>
         <p>Z: {gyroscopeData.z.toFixed(2)} рад/с</p>
+      </div>
+      <div className="p-5 border">
+        <h2>Гироскоп</h2>
+        {gyroSupported ? (
+          <>
+            <p>Alpha (Z): {gyroData.alpha.toFixed(2)}°</p>
+            <p>Beta (X): {gyroData.beta.toFixed(2)}°</p>
+            <p>Gamma (Y): {gyroData.gamma.toFixed(2)}°</p>
+          </>
+        ) : (
+          <p>Гироскоп не поддерживается вашим устройством.</p>
+        )}
       </div>
     </div>
   );
