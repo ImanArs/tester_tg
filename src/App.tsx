@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import "./App.css";
 import WebApp from "@twa-dev/sdk";
 
@@ -17,7 +17,7 @@ function App() {
     });
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     WebApp.ready();
     console.log("Данные о запуске:", WebApp.initDataUnsafe);
 
@@ -54,7 +54,6 @@ function App() {
       });
     }, 500);
 
-    // Очистка
     return () => {
       clearInterval(accelerometerInterval);
       clearInterval(gyroscopeInterval);
